@@ -11,15 +11,27 @@
 </head>
 <body>
 
-    <!-- Put the name of your app here (my sources place in `src` forder) -->
-    <script type="text/javascript" src="/_compile/src/Main.elm"></script>
+    <!-- this will fail in production -->
+    <script src="/_compile/src/Main.elm"></script>
+    <!-- this will fail in development -->
+    <script src="/src/elm-bundle.js"></script>
 
     <!-- Removes splash and starts elm app. -->
     <script type="text/javascript">
-        while (document.body.firstChild) {
-            document.body.removeChild(document.body.firstChild);
+        var app;
+
+        try {
+            app = Elm.App.fullscreen();
+
+            /* app.ports is now available */
+        } catch (e) {
+            // this will run in case there are compile errors:
+            var stylesheets = document.querySelectorAll('link');
+            for (var i = 0; i < stylesheets.length; i++) {
+                stylesheets[i].parentNode.removeChild(stylesheets[i]);
+            }
+            runElmProgram();
         }
-        runElmProgram();
     </script>
 </body>
 </html>

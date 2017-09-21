@@ -1,3 +1,4 @@
+    "react-native-push-notification": "2.2.0",
 
 # Created by https://www.gitignore.io/api/osx,elm,node,windows,webstorm,visualstudiocode
 
@@ -187,3 +188,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/osx,elm,node,windows,webstorm,visualstudiocode
+
+## CUSTOM
+elm-bundle.js
