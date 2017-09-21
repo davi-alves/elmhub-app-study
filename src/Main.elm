@@ -8,8 +8,12 @@ import Html.Events exposing (onClick)
 -- TYPES
 
 
+type Operation
+    = DeleteById
+
+
 type alias Msg =
-    { operation : String, data : Int }
+    { operation : Operation, data : Int }
 
 
 type alias SearchResult =
@@ -29,8 +33,8 @@ type alias Model =
 -- MODEL
 
 
-model : Model
-model =
+initialModel : Model
+initialModel =
     { query = "tutorial"
     , results =
         [ { id = 1
@@ -86,7 +90,7 @@ viewSearchResult result =
         , a [ href ("https://github.com/" ++ result.name), target "_blank" ]
             [ text result.name ]
         , button
-            [ class "hide-result", onClick { operation = "DELETE_BY_ID", data = result.id } ]
+            [ class "hide-result", onClick { operation = DeleteById, data = result.id } ]
             [ text "X" ]
         ]
 
@@ -97,10 +101,9 @@ viewSearchResult result =
 
 update : Msg -> Model -> Model
 update msg model =
-    if msg.operation == "DELETE_BY_ID" then
-        { model | results = List.filter (\result -> result.id /= msg.data) model.results }
-    else
-        model
+    case msg.operation of
+        DeleteById ->
+            { model | results = List.filter (\result -> result.id /= msg.data) model.results }
 
 
 
@@ -110,4 +113,4 @@ update msg model =
 main : Program Never Model Msg
 main =
     Html.beginnerProgram
-        { view = view, update = update, model = model }
+        { view = view, update = update, model = initialModel }
