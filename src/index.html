@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ElmHub</title>
+
+    <link rel="icon" type="image/png" href="elm-hub.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Put the name of your app here (my sources place in `src` forder) -->
+    <script type="text/javascript" src="/_compile/src/Main.elm"></script>
+
+    <!-- Removes splash and starts elm app. -->
+    <script type="text/javascript">
+        while (document.body.firstChild) {
+            document.body.removeChild(document.body.firstChild);
+        }
+        runElmProgram();
+    </script>
+</body>
+</html>
