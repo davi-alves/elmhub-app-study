@@ -2,18 +2,15 @@ module App exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onInput)
 
 
 -- TYPES
 
 
-type Operation
-    = DeleteById
-
-
-type alias Msg =
-    { operation : Operation, data : Int }
+type Msg
+    = SetQuery String
+    | DeleteById Int
 
 
 type alias SearchResult =
@@ -79,6 +76,12 @@ view : Model -> Html Msg
 view model =
     div [ class "content" ]
         [ elmHeader
+        , input
+            [ class "search-query"
+            , onInput SetQuery
+            , defaultValue model.query
+            ]
+            []
         , ul [ class "results" ] (List.map viewSearchResult model.results)
         ]
 
@@ -90,7 +93,7 @@ viewSearchResult result =
         , a [ href ("https://github.com/" ++ result.name), target "_blank" ]
             [ text result.name ]
         , button
-            [ class "hide-result", onClick { operation = DeleteById, data = result.id } ]
+            [ class "hide-result", onClick (DeleteById result.id) ]
             [ text "X" ]
         ]
 
@@ -101,9 +104,12 @@ viewSearchResult result =
 
 update : Msg -> Model -> Model
 update msg model =
-    case msg.operation of
-        DeleteById ->
-            { model | results = List.filter (\result -> result.id /= msg.data) model.results }
+    case msg of
+        DeleteById id ->
+            { model | results = List.filter (\result -> result.id /= id) model.results }
+
+        SetQuery queryString ->
+            { model | query = queryString }
 
 
 
@@ -113,4 +119,7 @@ update msg model =
 main : Program Never Model Msg
 main =
     Html.beginnerProgram
-        { view = view, update = update, model = initialModel }
+        { view = view
+        , update = update
+        , model = initialModel
+        }
