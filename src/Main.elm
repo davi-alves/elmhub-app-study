@@ -82,6 +82,7 @@ view model =
             , defaultValue model.query
             ]
             []
+        , button [ class "search-button" ] [ text "Search" ]
         , ul [ class "results" ] (List.map viewSearchResult model.results)
         ]
 
