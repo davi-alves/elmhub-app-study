@@ -38,6 +38,10 @@ h1 {
   margin-bottom: 16px;
 }
 
+.results li > span {
+  margin-right: 10px;
+}
+
 .star-count {
   font-weight: bold;
   margin-right: 16px;

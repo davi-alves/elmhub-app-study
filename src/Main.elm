@@ -1,11 +1,12 @@
 module App exposing (..)
 
+import Auth
 import Html exposing (..)
 import Html.Attributes exposing (class, target, href, property, defaultValue)
 import Html.Events exposing (..)
+import Http
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
-import SampleResponse
 
 
 -- MAIN
@@ -13,11 +14,43 @@ import SampleResponse
 
 main : Program Never Model Msg
 main =
-    Html.beginnerProgram
+    Html.program
         { view = view
         , update = update
-        , model = initialModel
+        , init = ( initialModel, searchFeed initialModel.query )
+        , subscriptions = \_ -> Sub.none
         }
+
+
+
+-- MODEL
+
+
+initialModel : Model
+initialModel =
+    { query = "tutorial"
+    , results = []
+    }
+
+
+
+-- COMMANDS
+
+
+searchFeed : String -> Cmd Msg
+searchFeed query =
+    let
+        url =
+            "https://api.github.com/search/repositories?access_token="
+                ++ Auth.token
+                ++ "&q="
+                ++ query
+                ++ "+language:elm&sort=stars&order=desc"
+
+        request =
+            "TODO replace this String with a Request built using http://package.elm-lang.org/packages/elm-lang/http/latest/Http#get"
+    in
+        Cmd.none
 
 
 
@@ -27,7 +60,10 @@ main =
 decodeResults : String -> List SearchResult
 decodeResults json =
     case decodeString responseDecoder json of
-        _ ->
+        Ok searchResults ->
+            searchResults
+
+        Err errorMessage ->
             []
 
 
@@ -40,18 +76,13 @@ responseDecoder =
 searchResultDecoder : Decoder SearchResult
 searchResultDecoder =
     decode SearchResult
-        |> hardcoded 0
-        |> hardcoded ""
-        |> hardcoded 0
+        |> required "id" int
+        |> required "full_name" string
+        |> required "stargazers_count" int
 
 
 
 -- TYPES
-
-
-type Msg
-    = SetQuery String
-    | DeleteById Int
 
 
 type alias SearchResult =
@@ -64,17 +95,6 @@ type alias SearchResult =
 type alias Model =
     { query : String
     , results : List SearchResult
-    }
-
-
-
--- MODEL
-
-
-initialModel : Model
-initialModel =
-    { query = "tutorial"
-    , results = []
     }
 
 
@@ -102,9 +122,19 @@ view model =
             , defaultValue model.query
             ]
             []
-        , button [ class "search-button" ] [ text "Search" ]
+        , button [ class "search-button", onClick Search ] [ text "Search" ]
         , ul [ class "results" ] (List.map viewSearchResult model.results)
         ]
+
+
+viewErrorMessage : Maybe String -> Html Msg
+viewErrorMessage errorMessage =
+    case errorMessage of
+        Just message ->
+            div [ class "error" ] [ text message ]
+
+        Nothing ->
+            text ""
 
 
 viewSearchResult : SearchResult -> Html Msg
@@ -121,6 +151,13 @@ viewSearchResult result =
 
 
 -- UPDATE
+
+
+type Msg
+    = Search
+    | SetQuery String
+    | DeleteById Int
+    | HandleSearchResponse (Result Http.Error (List SearchResult))
 
 
 update : Msg -> Model -> Model
