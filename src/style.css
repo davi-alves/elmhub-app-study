@@ -1,4 +1,3 @@
-
 .content {
   width: 960px;
   margin: 0 auto;
@@ -39,9 +38,9 @@ h1 {
   margin-bottom: 16px;
 }
 
-.start-count {
+.star-count {
   font-weight: bold;
-  margin: 0 15px 0 0;
+  margin-right: 16px;
 }
 
 a {

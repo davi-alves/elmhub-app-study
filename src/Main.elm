@@ -1,8 +1,49 @@
 module App exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Attributes exposing (class, target, href, property, defaultValue)
+import Html.Events exposing (..)
+import Json.Decode exposing (..)
+import Json.Decode.Pipeline exposing (..)
+import SampleResponse
+
+
+-- MAIN
+
+
+main : Program Never Model Msg
+main =
+    Html.beginnerProgram
+        { view = view
+        , update = update
+        , model = initialModel
+        }
+
+
+
+-- DECODER
+
+
+decodeResults : String -> List SearchResult
+decodeResults json =
+    case decodeString responseDecoder json of
+        _ ->
+            []
+
+
+responseDecoder : Decoder (List SearchResult)
+responseDecoder =
+    decode identity
+        |> required "items" (list searchResultDecoder)
+
+
+searchResultDecoder : Decoder SearchResult
+searchResultDecoder =
+    decode SearchResult
+        |> hardcoded 0
+        |> hardcoded ""
+        |> hardcoded 0
+
 
 
 -- TYPES
@@ -33,28 +74,7 @@ type alias Model =
 initialModel : Model
 initialModel =
     { query = "tutorial"
-    , results =
-        [ { id = 1
-          , name = "TheSeamau5/elm-checkerboardgrid-tutorial"
-          , stars = 66
-          }
-        , { id = 2
-          , name = "grzegorzbalcerek/elm-by-example"
-          , stars = 41
-          }
-        , { id = 3
-          , name = "sporto/elm-tutorial-app"
-          , stars = 35
-          }
-        , { id = 4
-          , name = "jvoigtlaender/Elm-Tutorium"
-          , stars = 10
-          }
-        , { id = 5
-          , name = "sporto/elm-tutorial-assets"
-          , stars = 7
-          }
-        ]
+    , results = []
     }
 
 
@@ -111,16 +131,3 @@ update msg model =
 
         SetQuery queryString ->
             { model | query = queryString }
-
-
-
--- MAIN
-
-
-main : Program Never Model Msg
-main =
-    Html.beginnerProgram
-        { view = view
-        , update = update
-        , model = initialModel
-        }
