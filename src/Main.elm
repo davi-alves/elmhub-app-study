@@ -148,17 +148,32 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Search ->
-            ( model
+            ( { model | errorMessage = Nothing }
             , searchFeed model.query
             )
 
         HandleSearchResponse (Ok results) ->
-            ( { model | results = results }
+            ( { model | results = results, errorMessage = Nothing }
             , Cmd.none
             )
 
         HandleSearchResponse (Err error) ->
-            ( model, Cmd.none )
+            let
+                errorMessage =
+                    case error of
+                        Http.BadUrl err ->
+                            err
+
+                        Http.BadStatus err ->
+                            err.status.message
+
+                        Http.BadPayload err _ ->
+                            err
+
+                        _ ->
+                            "Network error, please check your connection"
+            in
+                ( { model | errorMessage = Just errorMessage }, Cmd.none )
 
         DeleteById id ->
             ( { model | results = List.filter (\result -> result.id /= id) model.results }
