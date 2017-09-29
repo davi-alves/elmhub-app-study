@@ -5,7 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, target, href, property, defaultValue)
 import Html.Events exposing (..)
 import Http
-import Json.Decode exposing (..)
+import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (..)
 
 
@@ -30,6 +30,7 @@ initialModel : Model
 initialModel =
     { query = "tutorial"
     , results = []
+    , errorMessage = Nothing
     }
 
 
@@ -46,39 +47,27 @@ searchFeed query =
                 ++ "&q="
                 ++ query
                 ++ "+language:elm&sort=stars&order=desc"
-
-        request =
-            "TODO replace this String with a Request built using http://package.elm-lang.org/packages/elm-lang/http/latest/Http#get"
     in
-        Cmd.none
+        Http.get url responseDecoder
+            |> Http.send HandleSearchResponse
 
 
 
 -- DECODER
 
 
-decodeResults : String -> List SearchResult
-decodeResults json =
-    case decodeString responseDecoder json of
-        Ok searchResults ->
-            searchResults
-
-        Err errorMessage ->
-            []
-
-
 responseDecoder : Decoder (List SearchResult)
 responseDecoder =
     decode identity
-        |> required "items" (list searchResultDecoder)
+        |> required "items" (Json.Decode.list searchResultDecoder)
 
 
 searchResultDecoder : Decoder SearchResult
 searchResultDecoder =
     decode SearchResult
-        |> required "id" int
-        |> required "full_name" string
-        |> required "stargazers_count" int
+        |> required "id" Json.Decode.int
+        |> required "full_name" Json.Decode.string
+        |> required "stargazers_count" Json.Decode.int
 
 
 
@@ -95,6 +84,7 @@ type alias SearchResult =
 type alias Model =
     { query : String
     , results : List SearchResult
+    , errorMessage : Maybe String
     }
 
 
@@ -104,11 +94,9 @@ type alias Model =
 
 elmHeader : Html msg
 elmHeader =
-    div [ class "content" ]
-        [ header []
-            [ h1 [] [ text "ElmHub" ]
-            , span [ class "tagline" ] [ text "Like GitHub, but for Elm things." ]
-            ]
+    header []
+        [ h1 [] [ text "ElmHub" ]
+        , span [ class "tagline" ] [ text "Like GitHub, but for Elm things." ]
         ]
 
 
@@ -116,13 +104,9 @@ view : Model -> Html Msg
 view model =
     div [ class "content" ]
         [ elmHeader
-        , input
-            [ class "search-query"
-            , onInput SetQuery
-            , defaultValue model.query
-            ]
-            []
+        , input [ class "search-query", onInput SetQuery, defaultValue model.query ] []
         , button [ class "search-button", onClick Search ] [ text "Search" ]
+        , viewErrorMessage model.errorMessage
         , ul [ class "results" ] (List.map viewSearchResult model.results)
         ]
 
@@ -160,11 +144,28 @@ type Msg
     | HandleSearchResponse (Result Http.Error (List SearchResult))
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Search ->
+            ( model
+            , searchFeed model.query
+            )
+
+        HandleSearchResponse (Ok results) ->
+            ( { model | results = results }
+            , Cmd.none
+            )
+
+        HandleSearchResponse (Err error) ->
+            ( model, Cmd.none )
+
         DeleteById id ->
-            { model | results = List.filter (\result -> result.id /= id) model.results }
+            ( { model | results = List.filter (\result -> result.id /= id) model.results }
+            , Cmd.none
+            )
 
         SetQuery queryString ->
-            { model | query = queryString }
+            ( { model | query = queryString }
+            , Cmd.none
+            )
