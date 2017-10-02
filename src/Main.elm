@@ -8,6 +8,9 @@ import Http
 import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (..)
 
+import Types exposing (..)
+import Ports
+
 
 -- MAIN
 
@@ -70,34 +73,10 @@ searchResultDecoder =
         |> required "stargazers_count" Json.Decode.int
 
 
-
 -- TYPES
 
 
-type alias SearchResult =
-    { id : Int
-    , name : String
-    , stars : Int
-    }
-
-
-type alias Model =
-    { query : String
-    , results : List SearchResult
-    , errorMessage : Maybe String
-    }
-
-
-
 -- VIEW
-
-
-elmHeader : Html msg
-elmHeader =
-    header []
-        [ h1 [] [ text "ElmHub" ]
-        , span [ class "tagline" ] [ text "Like GitHub, but for Elm things." ]
-        ]
 
 
 view : Model -> Html Msg
@@ -111,7 +90,15 @@ view model =
         ]
 
 
-viewErrorMessage : Maybe String -> Html Msg
+elmHeader : Html msg
+elmHeader =
+    header []
+        [ h1 [] [ text "ElmHub" ]
+        , span [ class "tagline" ] [ text "Like GitHub, but for Elm things." ]
+        ]
+
+
+viewErrorMessage : Maybe String -> Html msg
 viewErrorMessage errorMessage =
     case errorMessage of
         Just message ->
@@ -136,12 +123,6 @@ viewSearchResult result =
 
 -- UPDATE
 
-
-type Msg
-    = Search
-    | SetQuery String
-    | DeleteById Int
-    | HandleSearchResponse (Result Http.Error (List SearchResult))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

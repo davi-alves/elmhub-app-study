@@ -10,28 +10,33 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="elm-app"></div>
 
     <!-- this will fail in production -->
     <script src="/_compile/src/Main.elm"></script>
     <!-- this will fail in development -->
     <script src="/src/elm-bundle.js"></script>
+    <script src="/src/github.js"></script>
 
     <!-- Removes splash and starts elm app. -->
     <script type="text/javascript">
-        var app;
+        const app = Elm.App.embed(document.getElementById('elm-app'));
 
-        try {
-            app = Elm.App.fullscreen();
+        ;(function (github, ports) {
+            'use strict';
 
-            /* app.ports is now available */
-        } catch (e) {
-            // this will run in case there are compile errors:
-            var stylesheets = document.querySelectorAll('link');
-            for (var i = 0; i < stylesheets.length; i++) {
-                stylesheets[i].parentNode.removeChild(stylesheets[i]);
+            function searchGithub(query) {
+                console.log(`searching for ${query}`);
+
+                github.getSearch(query).repositories({}, (err, repositories) => {
+                    console.log('Got response', repositories);
+
+                    // @TODO use app.ports
+                });
             }
-            runElmProgram();
-        }
+
+            ports.subscribe(searchGithub);
+        })(window.github, app.ports);
     </script>
 </body>
 </html>
