@@ -1,7 +1,5 @@
 module Types exposing (..)
 
-import Http
-
 
 type alias SearchResult =
     { id : Int
