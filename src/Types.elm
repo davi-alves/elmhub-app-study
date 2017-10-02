@@ -17,9 +17,9 @@ type alias Model =
     }
 
 
-
 type Msg
     = Search
     | SetQuery String
     | DeleteById Int
-    | HandleSearchResponse (Result Http.Error (List SearchResult))
+    | HandleSearchResponse (List SearchResult)
+    | HandleSearchError (Maybe String)

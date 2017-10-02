@@ -4,12 +4,10 @@ import Auth
 import Html exposing (..)
 import Html.Attributes exposing (class, target, href, property, defaultValue)
 import Html.Events exposing (..)
-import Http
-import Json.Decode exposing (Decoder)
+import Json.Decode exposing (Decoder, Value, decodeValue)
 import Json.Decode.Pipeline exposing (..)
-
 import Types exposing (..)
-import Ports
+import Ports exposing (githubSearch, githubResponse)
 
 
 -- MAIN
@@ -20,8 +18,8 @@ main =
     Html.program
         { view = view
         , update = update
-        , init = ( initialModel, searchFeed initialModel.query )
-        , subscriptions = \_ -> Sub.none
+        , init = ( initialModel, githubSearch (getQueryString initialModel.query) )
+        , subscriptions = \_ -> githubResponse decodeResponse
         }
 
 
@@ -41,22 +39,27 @@ initialModel =
 -- COMMANDS
 
 
-searchFeed : String -> Cmd Msg
-searchFeed query =
-    let
-        url =
-            "https://api.github.com/search/repositories?access_token="
-                ++ Auth.token
-                ++ "&q="
-                ++ query
-                ++ "+language:elm&sort=stars&order=desc"
-    in
-        Http.get url responseDecoder
-            |> Http.send HandleSearchResponse
+getQueryString : String -> String
+getQueryString query =
+    "access_token="
+        ++ Auth.token
+        ++ "&q="
+        ++ query
+        ++ "+language:elm&sort=stars&order=desc"
 
 
 
 -- DECODER
+
+
+decodeResponse : Value -> Msg
+decodeResponse json =
+    case decodeValue responseDecoder json of
+        Ok results ->
+            HandleSearchResponse results
+
+        Err err ->
+            HandleSearchError (Just err)
 
 
 responseDecoder : Decoder (List SearchResult)
@@ -72,8 +75,6 @@ searchResultDecoder =
         |> required "full_name" Json.Decode.string
         |> required "stargazers_count" Json.Decode.int
 
-
--- TYPES
 
 
 -- VIEW
@@ -124,37 +125,21 @@ viewSearchResult result =
 -- UPDATE
 
 
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Search ->
             ( { model | errorMessage = Nothing }
-            , searchFeed model.query
+            , githubSearch (getQueryString model.query)
             )
 
-        HandleSearchResponse (Ok results) ->
+        HandleSearchResponse results ->
             ( { model | results = results, errorMessage = Nothing }
             , Cmd.none
             )
 
-        HandleSearchResponse (Err error) ->
-            let
-                errorMessage =
-                    case error of
-                        Http.BadUrl err ->
-                            err
-
-                        Http.BadStatus err ->
-                            err.status.message
-
-                        Http.BadPayload err _ ->
-                            err
-
-                        _ ->
-                            "Network error, please check your connection"
-            in
-                ( { model | errorMessage = Just errorMessage }, Cmd.none )
+        HandleSearchError error ->
+            ( { model | errorMessage = error }, Cmd.none )
 
         DeleteById id ->
             ( { model | results = List.filter (\result -> result.id /= id) model.results }

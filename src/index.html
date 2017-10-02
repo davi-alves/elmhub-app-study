@@ -12,31 +12,30 @@
 <body>
     <div id="elm-app"></div>
 
-    <!-- this will fail in production -->
-    <script src="/_compile/src/Main.elm"></script>
-    <!-- this will fail in development -->
     <script src="/src/elm-bundle.js"></script>
     <script src="/src/github.js"></script>
 
-    <!-- Removes splash and starts elm app. -->
     <script type="text/javascript">
+      (function(Github) {
+        'use strict';
+
+        // -- Boot app
         const app = Elm.App.embed(document.getElementById('elm-app'));
+        // -- Creates Github lib instance
+        const gh = new Github();
+        // -- Subscribe to Elm port
+        app.ports.githubSearch.subscribe(searchGithub);
 
-        ;(function (github, ports) {
-            'use strict';
+        function searchGithub(query) {
+            console.log(`searching for ${query}`);
 
-            function searchGithub(query) {
-                console.log(`searching for ${query}`);
-
-                github.getSearch(query).repositories({}, (err, repositories) => {
-                    console.log('Got response', repositories);
-
-                    // @TODO use app.ports
-                });
-            }
-
-            ports.subscribe(searchGithub);
-        })(window.github, app.ports);
+            gh.getSearch(query).repositories({}, (err, repositories) => {
+                console.log('Got response', repositories);
+                // -- send information back to Elm
+                app.ports.githubResponse.send(repositories);
+            });
+        }
+      })(window.Github);
     </script>
 </body>
 </html>
