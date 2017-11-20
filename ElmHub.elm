@@ -1,4 +1,4 @@
-module App exposing (..)
+module ElmHub exposing (..)
 
 import Auth
 import Html exposing (..)
@@ -10,17 +10,21 @@ import Types exposing (..)
 import Ports exposing (githubSearch, githubResponse)
 
 
--- MAIN
+-- Init
 
 
-main : Program Never Model Msg
-main =
-    Html.program
-        { view = view
-        , update = update
-        , init = ( initialModel, githubSearch (getQueryString initialModel.query) )
-        , subscriptions = \_ -> githubResponse decodeResponse
-        }
+init : ( Model, Cmd msg )
+init =
+    ( initialModel, githubSearch (getQueryString initialModel.query) )
+
+
+
+-- Subscriptions
+
+
+subscriptions : a -> Sub Msg
+subscriptions =
+    \_ -> githubResponse decodeResponse
 
 
 
@@ -32,6 +36,12 @@ initialModel =
     { query = "tutorial"
     , results = []
     , errorMessage = Nothing
+    , options =
+        { minStars = 0
+        , minStarsError = Nothing
+        , searchIn = "name"
+        , userFilter = ""
+        }
     }
 
 
@@ -150,3 +160,6 @@ update msg model =
             ( { model | query = queryString }
             , Cmd.none
             )
+
+        Options _ ->
+            ( model, Cmd.none )
