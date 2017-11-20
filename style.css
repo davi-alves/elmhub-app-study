@@ -1,5 +1,5 @@
 .content {
-  width: 960px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 30px;
   font-family: Helvetica, Arial, serif;
@@ -10,6 +10,7 @@ header {
   padding: 6px 12px;
   height: 36px;
   background-color: rgb(96, 181, 204);
+  width: 100%;
 }
 
 h1 {
@@ -36,10 +37,6 @@ h1 {
 .results li {
   font-size: 18px;
   margin-bottom: 16px;
-}
-
-.results li > span {
-  margin-right: 10px;
 }
 
 .star-count {
@@ -94,6 +91,15 @@ button:focus, input:focus {
   outline: none;
 }
 
+.stars-error {
+  background-color: #FF9632;
+  font-size: 16px;
+  padding: 10px;
+  margin-right: 24px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
 .error {
   background-color: #FF9632;
   padding: 20px;
@@ -101,4 +107,57 @@ button:focus, input:focus {
   overflow-x: auto;
   font-family: monospace;
   font-size: 18px;
+}
+
+.search-input {
+  display: block;
+  float: left;
+  width: 42%;
+}
+
+.search-options {
+  position: relative;
+  float: right;
+  width: 58%;
+  box-sizing: border-box;
+  padding-top: 20px;
+}
+
+.search-option {
+  display: block;
+  float: left;
+  width: 30%;
+  margin-left: 16px;
+  box-sizing: border-box;
+}
+
+.search-option input[type="text"] {
+  padding: 5px;
+  box-sizing: border-box;
+  width: 90%;
+}
+
+.search:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.top-label {
+  display: block;
+  color: #555;
+}
+
+th {
+  text-align: left;
+  cursor: pointer;
+}
+
+th:hover {
+  color: rgb(96, 181, 204);
+}
+
+th, td {
+  font-size: 18px;
+  padding-right: 20px;
 }

@@ -34,6 +34,6 @@ type Msg
 
 
 type OptionsMsg
-    = SetMinStars Int
+    = SetMinStars String
     | SetSearchIn String
     | SetUserFilter String

@@ -1,2 +1,2 @@
 #!/bin/sh
-elm-live src/Main.elm --open --pushstate --output=src/elm-bundle.js
+elm-live Main.elm --open --pushstate --output=elm-bundle.js
