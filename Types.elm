@@ -1,5 +1,7 @@
 module Types exposing (..)
 
+import Table
+
 
 type alias SearchResult =
     { id : Int
@@ -13,6 +15,7 @@ type alias Model =
     , results : List SearchResult
     , errorMessage : Maybe String
     , options : SearchOptions
+    , tableState : Table.State
     }
 
 
@@ -31,6 +34,8 @@ type Msg
     | HandleSearchResponse (List SearchResult)
     | HandleSearchError (Maybe String)
     | Options OptionsMsg
+    | SetTableState Table.State
+    | DoNothing
 
 
 type OptionsMsg

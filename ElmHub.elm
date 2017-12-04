@@ -6,6 +6,7 @@ import Html.Attributes exposing (class, target, href, defaultValue, type_, check
 import Html.Events exposing (..)
 import Json.Decode exposing (Decoder, Value, decodeValue)
 import Json.Decode.Pipeline exposing (..)
+import Table
 import Types exposing (..)
 import Ports exposing (githubSearch, githubResponse)
 
@@ -42,6 +43,7 @@ initialModel =
         , searchIn = "name"
         , userFilter = ""
         }
+    , tableState = Table.initialSort "Stars"
     }
 
 
@@ -116,7 +118,7 @@ view model =
                 ]
             ]
         , viewErrorMessage model.errorMessage
-        , ul [ class "results" ] (List.map viewSearchResult model.results)
+        , Table.view tableConfig model.tableState model.results
         ]
 
 
@@ -174,16 +176,20 @@ viewErrorMessage errorMessage =
             text ""
 
 
-viewSearchResult : SearchResult -> Html Msg
+viewSearchResult : SearchResult -> Table.HtmlDetails Msg
 viewSearchResult result =
-    li []
-        [ span [ class "star-count" ] [ text (toString result.stars) ]
-        , a [ href ("https://github.com/" ++ result.name), target "_blank" ]
+    Table.HtmlDetails []
+        [ a [ href ("https://github.com/" ++ result.name), target "_blank" ]
             [ text result.name ]
-        , button
-            [ class "hide-result", onClick (DeleteById result.id) ]
+        , button [ class "hide-result", onClick (DeleteById result.id) ]
             [ text "X" ]
         ]
+
+
+viewStars : SearchResult -> Table.HtmlDetails Msg
+viewStars result =
+    Table.HtmlDetails []
+        [ span [ class "star-count" ] [ text (toString result.stars) ] ]
 
 
 
@@ -198,6 +204,37 @@ onChange toMsg =
 onBlurWithTargetValue : (String -> msg) -> Attribute msg
 onBlurWithTargetValue toMsg =
     on "blur" (Json.Decode.map toMsg targetValue)
+
+
+
+-- TABLE
+
+
+tableConfig : Table.Config SearchResult Msg
+tableConfig =
+    Table.config
+        { toId = .id >> toString
+        , toMsg = SetTableState
+        , columns = [ starsColumn, nameColumn ]
+        }
+
+
+starsColumn : Table.Column SearchResult Msg
+starsColumn =
+    Table.veryCustomColumn
+        { name = "Stars"
+        , viewData = viewStars
+        , sorter = Table.increasingOrDecreasingBy (negate << .stars)
+        }
+
+
+nameColumn : Table.Column SearchResult Msg
+nameColumn =
+    Table.veryCustomColumn
+        { name = "Name"
+        , viewData = viewSearchResult
+        , sorter = Table.increasingOrDecreasingBy .name
+        }
 
 
 
@@ -250,3 +287,9 @@ update msg model =
 
         Options searchOptions ->
             ( { model | options = (updateOptions searchOptions model.options) }, Cmd.none )
+
+        SetTableState tableState ->
+            ( { model | tableState = tableState }, Cmd.none )
+
+        DoNothing ->
+            ( model, Cmd.none )
