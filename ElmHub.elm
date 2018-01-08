@@ -4,6 +4,7 @@ import Auth
 import Html exposing (..)
 import Html.Attributes exposing (class, target, href, defaultValue, type_, checked, placeholder, value)
 import Html.Events exposing (..)
+import Html.Lazy exposing (lazy, lazy3)
 import Json.Decode exposing (Decoder, Value, decodeValue)
 import Json.Decode.Pipeline exposing (..)
 import Table
@@ -111,14 +112,14 @@ view model =
             ]
         , div [ class "search" ]
             -- maps the view to the Options type constructor
-            [ Html.map Types.Options (viewSearchOptions model.options)
+            [ Html.map Types.Options (lazy viewSearchOptions model.options)
             , div [ class "search-input" ]
                 [ input [ class "search-query", onInput SetQuery, defaultValue model.query ] []
                 , button [ class "search-button", onClick Search ] [ text "Search" ]
                 ]
             ]
         , viewErrorMessage model.errorMessage
-        , Table.view tableConfig model.tableState model.results
+        , lazy3 Table.view tableConfig model.tableState model.results
         ]
 
 
@@ -138,7 +139,7 @@ viewSearchOptions opts =
             , input
                 [ type_ "text"
                 , placeholder "Enter a username"
-                , defaultValue opts.userFilter
+                , defaultValue (Debug.log "username updated:" opts.userFilter)
                 , onInput SetUserFilter
                 ]
                 []
